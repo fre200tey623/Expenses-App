@@ -5,7 +5,6 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -15,10 +14,30 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text("Versão Inicial"));
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Despesas Pessoais"),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: double.infinity,
+            height: MediaQuery.of(context).size.height*0.2,
+            child: const Card(
+              elevation: 5,
+              color: Colors.deepPurple,
+              child: Text("Grafico"),
+            ),
+          ),
+          const Card(
+            color: Colors.amber,
+            child: Text("Lista de Tarefas"),
+          )
+        ],
+      ),
+    );
   }
 }
-

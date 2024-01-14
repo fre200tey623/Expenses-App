@@ -1,47 +1,22 @@
 import 'dart:math';
-
+import 'package:expenses_project/models/expenses_model.dart';
 import 'package:expenses_project/models/transaction.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'components/input.dart';
 
 class FormWidget extends StatefulWidget {
-  final Function(String, double) changeTransaction;
-  bool error;
-
-  FormWidget({super.key, required this.changeTransaction, required this.error});
+  FormWidget({super.key});
 
   @override
   _FormWidgetState createState() => _FormWidgetState();
 }
 
 class _FormWidgetState extends State<FormWidget> {
-  String title = '';
-  String value = '';
-
-  void setTitle(String title) {
-    setState(() {
-      this.title = title;
-    });
-  }
-
-  void setValue(String value) {
-    setState(() {
-      this.value = value;
-    });
-  }
-
-  void setError(bool error) {
-    setState(() {
-      widget.error = error;
-    });
-    print('Valor do error dentro do widget->' + error.toString());
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Container(
+    return Consumer<ExpensesModel>(
+      builder: (context, value, child) => Container(
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.only(
@@ -54,69 +29,50 @@ class _FormWidgetState extends State<FormWidget> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  foregroundColor: Colors.transparent,
-                ).copyWith(elevation: ButtonStyleButton.allOrNull(0.0)),
-                onPressed: () {
-                  setError(false);
-                  Navigator.pop(context);
-                },
-                child: const Center(
-                  child: Icon(size: 48, color: Colors.black, Icons.minimize),
-                ),
-              ),
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      SizedBox(height: 24),
+                      const Icon(Icons.minimize, size: 48),
+                      const SizedBox(height: 16),
+                      const Text("Adicionar nova despesa",
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w500)),
+                      SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.08),
                       InputWidget(
-                          name: 'Titulo',
-                          type: null,
-                          onInputChanged: (String value) {
-                            setTitle(value);
-                          }),
-                      SizedBox(height: 16),
+                          name: 'Título',
+                          type: 'text',
+                          onInputChanged: value.setTitle),
+                      const SizedBox(height: 16),
                       InputWidget(
                           name: 'Valor',
                           type: 'money',
-                          onInputChanged: (String value) {
-                            setValue(value);
-                          }),
-                      SizedBox(height: 16),
-                      widget.error == true
-                          ? Text(
+                          onInputChanged: value.setValue),
+                      const SizedBox(height: 16),
+                      value.error == true
+                          ? const Text(
                               style: TextStyle(color: Colors.red),
                               "Os campos não podem ser vazios")
                           : Container(),
-                      SizedBox(height: 56),
-                      Container(
+                      const SizedBox(height: 48),
+                      SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              minimumSize: Size(double.infinity, 48),
-                              backgroundColor: Theme.of(context).colorScheme.primary,
+                              elevation: 4,
+                              minimumSize: const Size(double.infinity, 56),
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.primary,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(32),
+                                borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            onPressed: () => {
-                                  widget.changeTransaction(title,
-                                      value == '' ? 0 : double.parse(value)),
-                                  if (title == '' || value == '')
-                                    {
-                                      setError(true),
-                                    }
-                                  else
-                                    {
-                                      setError(false),
-                                      Navigator.pop(context),
-                                    }
-                                  //Navigator.pop(context)
-                                },
-                            child: Text('Confirmar')),
+                            onPressed: () {
+                              value.newTransaction(value.title, value.value);
+                              Navigator.pop(context);
+                            },
+                            child: const Text('Confirmar')),
                       ),
                     ],
                   ),

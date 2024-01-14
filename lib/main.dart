@@ -1,4 +1,7 @@
 import 'dart:math';
+import 'package:expenses_project/models/expenses_model.dart';
+import 'package:provider/provider.dart';
+
 import './card.dart';
 import 'package:expenses_project/models/transaction.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +11,7 @@ import './transaction_list.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(ChangeNotifierProvider(create: (context) => ExpensesModel(),child: MyApp(),));
 }
 
 class MyApp extends StatelessWidget {
@@ -16,6 +19,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       supportedLocales: const [
         Locale('pt', 'BR'),
       ],
@@ -39,65 +43,39 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final transaction = [];
-  bool error = false;
-
-  void addTransaction(String title, double value) {
-    if (title.isEmpty || value <= 0) {
-      return;
-    }
-
-    final newTransaction = Transaction(
-        id: Random().nextDouble().toString(),
-        title: title,
-        value: value,
-        date: DateTime.now());
-
-    setState(() {
-      transaction.add(newTransaction);
-    });
-  }
-
+  
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Consumer <ExpensesModel>(builder: (context, value, child) => Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
         title: const Text("Despesas Pessoais"),
-        actions: [
-          IconButton(
-            onPressed: () {
-              showModalBottomSheet(
-                isScrollControlled: true,
-                context: context,
-                backgroundColor: Colors.transparent,
-                builder: (BuildContext context) {
-                  return Container(
-                    height: MediaQuery.of(context).size.height * 0.8,
-                    child: FormWidget(
-                        changeTransaction: addTransaction, error: error),
-                  );
-                },
-              );
-            },
-            icon: const Icon(Icons.add),
-          )
-        ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          CardWidget(),
-          SizedBox(height: 12),
-          transaction.isEmpty
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8),
+            child: CardWidget(recentTransaction: []),
+          ),
+          const SizedBox(height: 12),
+          value.transaction.isEmpty
               ? Container(
-                  child: const Expanded(
-                      child:
-                          Center(child: Text("Nenhuma transação cadastrada!"))))
-              : Transaction_List(transaction: transaction.cast<Transaction>())
+                padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.15),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text("Nenhuma transação cadastrada!"),
+                    const SizedBox(height: 8),
+                    SizedBox(width: 120,height: 120,child: Image.asset("assets/piggy-bank.png"))
+                  ],
+                ),
+              )
+              : Transaction_List(transaction: value.transaction.cast<Transaction>())
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton(       
         backgroundColor: Colors.deepPurple,
         child: const Icon(Icons.add),
         onPressed: () => {
@@ -106,15 +84,15 @@ class _MyHomePageState extends State<MyHomePage> {
             context: context,
             backgroundColor: Colors.transparent,
             builder: (BuildContext context) {
-              return Container(
+              return SizedBox(
                 height: MediaQuery.of(context).size.height * 0.8,
                 child:
-                    FormWidget(changeTransaction: addTransaction, error: error),
+                    FormWidget(),
               );
             },
           ),
         },
       ),
-    );
+    ));
   }
 }
